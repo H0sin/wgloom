@@ -9,8 +9,9 @@ services:
       - "8000:8000"
     depends_on:
       - wg-loom-database
-    network_mode: host
-
+#    network_mode: host
+    volumes:
+      - /root/backup/wireguard/interfaces:/etc/wireguard/
 
   # config postgres data base
   wg-loom-database:
@@ -25,7 +26,7 @@ services:
       POSTGRES_DB: wg-loom-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    network_mode: host
+#    network_mode: host
 
   db_admin:
     container_name: db-admin
@@ -36,7 +37,7 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=hossein@faraji.com
       - PGADMIN_DEFAULT_PASSWORD=Hossein*(!^
-    network_mode: host
+#    network_mode: host
 
 
 volumes:

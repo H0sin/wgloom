@@ -10,8 +10,8 @@ logger = logging.getLogger("uvicorn.error")
 __version__ = "0.0.1"
 
 app = FastAPI(
-    title='chiz market API',
-    description='shop for digital software',
+    title='wg loom',
+    description='wireguard accounting panel',
     version=__version__,
     docs_url="/docs" if DOCS else None,
     redoc_url="/redoc" if REDOC else None,

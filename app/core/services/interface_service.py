@@ -1,8 +1,11 @@
+from typing import List
+
 from sqlalchemy import update
 
 import config
 from app.core.repositories.base import BaseRepository
 from app.db.models import Interface
+from app.schemas import interface
 from app.schemas.interface import InterfaceCreate, InterfaceStatus
 from app.utils.interface import add_interface_file,interface_status
 
@@ -12,8 +15,8 @@ class InterfaceService:
         self.repository = BaseRepository(Interface, db_session)
         self.db_session = db_session
 
-    async def create_interface(self, interface_in: InterfaceCreate):
-        new_interface = await self.repository.create(interface_in)
+    async def create_interface(self, interface_in: InterfaceCreate) -> Interface:
+        new_interface : Interface = await self.repository.create(interface_in)
 
         file_created = await add_interface_file(interface_in, config.INTERFACE_DIRECTORY)
 
@@ -35,3 +38,6 @@ class InterfaceService:
             result = await self.db_session.execute(stmt)
             await self.db_session.commit()
             return result.fetchone()
+
+    async def get_interfaces(self) -> List[Interface]:
+        return await self.repository.list()

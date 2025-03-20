@@ -1,4 +1,6 @@
 import os
+import textwrap
+
 import aiofiles
 from app.schemas.interface import InterfaceCreate, InterfaceStatus
 import asyncio
@@ -6,16 +8,17 @@ import asyncio
 
 async def add_interface_file(interface: InterfaceCreate, directory: str = "") -> bool:
     try:
-        content = f"""[Interface]
-        Address = {interface.ip_address}
-        SaveConfig = {interface.save_config}
-        PreUp = {interface.pre_up or ""}
-        PostUp = {interface.post_up or ""}
-        PreDown = {interface.pre_down or ""}
-        PostDown = {interface.post_down or ""}
-        ListenPort = {interface.listen_port or ""}
-        PrivateKey = {interface.private_key}
-        """
+        content = textwrap.dedent(f"""
+            [Interface]
+            Address = {interface.ip_address}
+            SaveConfig = {interface.save_config}
+            PreUp = {interface.pre_up or ""}
+            PostUp = {interface.post_up or ""}
+            PreDown = {interface.pre_down or ""}
+            PostDown = {interface.post_down or ""}
+            ListenPort = {interface.listen_port or ""}
+            PrivateKey = {interface.private_key}
+        """).strip()
 
         file_path = os.path.join(directory, f"{interface.name}.conf")
 
@@ -29,8 +32,6 @@ async def add_interface_file(interface: InterfaceCreate, directory: str = "") ->
     except Exception as e:
         print("Error:", e)
         return False
-
-
 
 
 async def interface_status(status: InterfaceStatus, name: str = "") -> tuple[str, bool]:
