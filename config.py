@@ -21,6 +21,17 @@ SECRET_KEY = config('SECRET_KEY', default="WG_LOOM_GENERETE")
 ALGORITHM = config('ALGORITHM', default="HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', default=30, cast=int)
 
+# dashboard path
+DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
+
+# unicorn port
+UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
 
 # interface
 INTERFACE_DIRECTORY = config('INTERFACE_DIRECTORY',default='/etc/wireguard')
+
+
+# vite base url
+VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \
+    if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/" \
+    else config("VITE_BASE_API", default="/api/")

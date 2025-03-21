@@ -6,8 +6,14 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /wgloom
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends iproute2 wireguard wireguard-tools iptables
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        iproute2 \
+        wireguard \
+        wireguard-tools \
+        iptables \
+        nodejs \
+        npm
 
 COPY ./requirements.txt /wgloom/
 

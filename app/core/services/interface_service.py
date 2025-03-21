@@ -4,10 +4,11 @@ from sqlalchemy import update
 
 import config
 from app.core.repositories.base import BaseRepository
-from app.db.models import Interface
+from app.db.models import Interface, IpAddress
 from app.schemas import interface
 from app.schemas.interface import InterfaceCreate, InterfaceStatus
 from app.utils.interface import add_interface_file, interface_status, delete_interface_file
+from app.utils.iprange_utility import IpRangeUtility
 
 
 class InterfaceService:
@@ -16,12 +17,17 @@ class InterfaceService:
         self.db_session = db_session
 
     async def create_interface(self, interface_in: InterfaceCreate) -> Interface:
-        new_interface: Interface = await self.repository.create(interface_in)
-
         file_created = await add_interface_file(interface_in, config.INTERFACE_DIRECTORY)
 
         if not file_created:
             raise ValueError("Insert prevented because the file creation failed.")
+
+        new_interface: Interface = await self.repository.create(interface_in)
+        ip_list: list[str] = IpRangeUtility(new_interface.ip_address).get_all_ips()
+
+        for ip in ip_list[1:]:
+            ip_obj = IpAddress(ip=ip, interface_id=new_interface.id)
+            new_interface.ip_addresses.append(ip_obj)
 
         return new_interface
 

@@ -89,21 +89,21 @@ class IpRangeUtility:
 
 
 # Example usage:
-if __name__ == "__main__":
-    cidr_input = "11.0.0.0/19"
-    ip_util = IpRangeUtility(cidr_input)
-    print("Base IP:", ip_util.base_ip)
-    print("Prefix Length:", ip_util.prefix_length)
-    print("Start IP:", str(ipaddress.IPv4Address(ip_util.start_ip)))
-    print("End IP:", str(ipaddress.IPv4Address(ip_util.end_ip)))
-    print("Number of IPs:", ip_util.number_of_ips)
-
-    # Check if a specific IP is within the range
-    test_ip = "192.168.1.10"
-    print(f"Is {test_ip} in range? {ip_util.is_ip_in_range(test_ip)}")
-
-    # Generate list of IPs (this example generates a manageable list of IP addresses)
-    all_ips = ip_util.get_all_ips()
-    print("Total generated IPs:", len(all_ips))
-    for ip in all_ips:
-        print(ip)
+# if __name__ == "__main__":
+#     cidr_input = "11.0.0.0/19"
+#     ip_util = IpRangeUtility(cidr_input)
+#     print("Base IP:", ip_util.base_ip)
+#     print("Prefix Length:", ip_util.prefix_length)
+#     print("Start IP:", str(ipaddress.IPv4Address(ip_util.start_ip)))
+#     print("End IP:", str(ipaddress.IPv4Address(ip_util.end_ip)))
+#     print("Number of IPs:", ip_util.number_of_ips)
+#
+#     # Check if a specific IP is within the range
+#     test_ip = "192.168.1.10"
+#     print(f"Is {test_ip} in range? {ip_util.is_ip_in_range(test_ip)}")
+#
+#     # Generate list of IPs (this example generates a manageable list of IP addresses)
+#     all_ips = ip_util.get_all_ips()
+#     print("Total generated IPs:", len(all_ips))
+#     for ip in all_ips:
+#         print(ip)

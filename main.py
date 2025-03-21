@@ -11,10 +11,13 @@ if __name__ == "__main__":
         bind_args['uds'] = None
         bind_args['host'] = '0.0.0.0'
 
-    uvicorn.run(
-        "main:app",
-        **bind_args,
-        workers=1,
-        reload=DEBUG,
-        log_level=logging.DEBUG if DEBUG else logging.INFO
-    )
+    try:
+        uvicorn.run(
+            "main:app",
+            **bind_args,
+            workers=1,
+            reload=DEBUG,
+            log_level=logging.DEBUG if DEBUG else logging.INFO
+        )
+    except FileNotFoundError:
+        pass

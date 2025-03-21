@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app import routers
+from app import routers,dashboard
 from app.routers import api_router
 
 app.include_router(api_router)
