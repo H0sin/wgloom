@@ -12,6 +12,10 @@ services:
     network_mode: host
     volumes:
       - /root/backup/wireguard/interfaces:/etc/wireguard/
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
 
   # config postgres data base
   wg-loom-database:
