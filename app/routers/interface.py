@@ -32,3 +32,8 @@ async def interface_status(name: str, status: InterfaceStatus,
 @router.get('/interface', response_model=List[Interface])
 async def get_interface(service: InterfaceService = Depends(get_interface_service)):
     return await service.get_interfaces()
+
+
+@router.delete('/interface/{name}')
+async def delete_interface(name: str, service: InterfaceService = Depends(get_interface_service)) -> bool:
+    return await service.delete_interface(name)

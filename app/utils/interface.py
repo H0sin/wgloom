@@ -2,6 +2,8 @@ import os
 import textwrap
 
 import aiofiles
+
+import config
 from app.schemas.interface import InterfaceCreate, InterfaceStatus
 import asyncio
 
@@ -57,3 +59,23 @@ async def interface_status(status: InterfaceStatus, name: str = "") -> tuple[str
     except Exception as e:
         print("An error occurred:", str(e))
         return str(e), False
+
+
+
+async def delete_interface_file(name: str) -> bool:
+    path = config.INTERFACE_DIRECTORY + f"/{name}.conf"
+
+    process = await asyncio.create_subprocess_exec(
+        "rm", "-r", path,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    stdout, stderr = await process.communicate()
+    output = stdout.decode().strip()
+
+    if output:
+        print("Output:", output)
+    else:
+        print("No output received from rm command.")
+    return True

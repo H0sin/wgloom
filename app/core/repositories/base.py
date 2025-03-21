@@ -27,6 +27,10 @@ class BaseRepository(Generic[ModelType, CreateSchemaType]):
         result = await self.db.execute(select(self.model).filter_by(id=id))
         return result.scalars().first()
 
+    async def single_filters(self, **filters) -> Optional[ModelType]:
+        result = await self.db.execute(select(self.model).filter_by(**filters))
+        return result.scalars().first()
+
     async def list(self) -> List[ModelType]:
         """Retrieve all records of the model."""
         result = await self.db.execute(select(self.model))
