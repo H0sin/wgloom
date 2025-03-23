@@ -12,3 +12,4 @@ alembic~=1.15.1
 PyJWT~=2.10.1
 python-multipart~=0.0.7
 aiofiles~=24.1.0
+PyNaCl~=1.5.0
