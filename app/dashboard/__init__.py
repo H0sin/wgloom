@@ -9,20 +9,21 @@ from fastapi.staticfiles import StaticFiles
 
 base_dir = Path(__file__).parent
 build_dir = base_dir / 'build'
-statics_dir = build_dir / 'public'
+statics_dir = build_dir / 'src'
 
 
 def build():
     proc = subprocess.Popen(
-        ['npm', 'run', 'build'],
-        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API}
+        ['npm', 'run', 'build', '--',  '--outDir', build_dir, '--assetsDir', 'statics'],
+        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
+        cwd=base_dir
     )
     proc.wait()
-    # with open(build_dir / 'index.html', 'r') as file:
-    #     html = file.read()
-    # with open(build_dir / '404.html', 'w') as file:
-    #     file.write(html)
-    #
+    with open(build_dir / 'index.html', 'r') as file:
+        html = file.read()
+    with open(build_dir / '404.html', 'w') as file:
+        file.write(html)
+
 
 def run_dev():
     proc = subprocess.Popen(
@@ -35,7 +36,7 @@ def run_dev():
 
 
 def run_build():
-    if not os.path.isdir('.next'):
+    if not build_dir.is_dir():
         build()
 
     app.mount(
@@ -56,81 +57,3 @@ def startup():
         run_dev()
     else:
         run_build()
-
-
-# import atexit
-# import os
-# import subprocess
-# from contextlib import asynccontextmanager
-# from pathlib import Path
-#
-# from fastapi import FastAPI
-#
-# from app import app
-# from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
-# from fastapi.staticfiles import StaticFiles
-#
-# base_dir = Path(__file__).parent
-# build_dir = base_dir / 'build'
-# statics_dir = build_dir / 'statics'
-#
-#
-# def build():
-#     proc = subprocess.Popen(
-#         ['npm', 'run', 'build', '--', '--outDir', build_dir, '--assetsDir', 'statics'],
-#         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
-#         cwd=base_dir
-#     )
-#     proc.wait()
-#     with open(build_dir / 'index.html', 'r') as file:
-#         html = file.read()
-#     with open(build_dir / '404.html', 'w') as file:
-#         file.write(html)
-#
-#
-# def run_dev():
-#     # proc = subprocess.Popen(
-#     #     ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--clearScreen', 'false', '--base',
-#     #      os.path.join(DASHBOARD_PATH, '')],
-#     #     env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
-#     #     cwd=base_dir
-#     # )
-#
-#     proc = subprocess.Popen(
-#         ['npm', 'run', 'dev'],
-#         env={**os.environ, 'VITE_BASE_API': VITE_BASE_API, 'HOST': '0.0.0.0'},
-#         cwd=base_dir
-#     )
-#
-#     # proc = subprocess.Popen(
-#     #     ['npm', 'run', 'dev'],
-#     #      os.path.join(DASHBOARD_PATH, ''),
-#     #     env={**os.environ, 'VITE_BASE_API': VITE_BASE_API, 'HOST': '0.0.0.0'},
-#     #     cwd=base_dir
-#     # )
-#
-#
-#     atexit.register(proc.terminate)
-#
-#
-# def run_build():
-#     if not build_dir.is_dir():
-#         build()
-#
-#     app.mount(
-#         DASHBOARD_PATH,
-#         StaticFiles(directory=build_dir, html=True),
-#         name="dashboard"
-#     )
-#     app.mount(
-#         '/statics/',
-#         StaticFiles(directory=statics_dir, html=True),
-#         name="statics"
-#     )
-#
-# @app.on_event("startup")
-# def startup():
-#     if DEBUG:
-#         run_dev()
-#     else:
-#         run_build()
