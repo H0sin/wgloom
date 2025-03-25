@@ -68,13 +68,13 @@ def run_build():
         name="statics"
     )
 
-
-@app.on_event("startup")
-def startup():
-    if DEBUG:
-        run_dev()
-    else:
-        run_build()
+#
+# @app.on_event("startup")
+# def startup():
+#     if DEBUG:
+#         run_dev()
+#     else:
+#         run_build()
 
 
 # @asynccontextmanager
