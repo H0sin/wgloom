@@ -1,11 +1,10 @@
 services:
   wg-loom:
     container_name: wg-loom
+    env_file: .env
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     depends_on:
       - wg-loom-database
     network_mode: host
@@ -20,8 +19,6 @@ services:
   wg-loom-database:
     container_name: wg-loom-database
     image: postgres:15-alpine
-    ports:
-      - "5432:5432"
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -40,7 +37,7 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=hossein@faraji.com
       - PGADMIN_DEFAULT_PASSWORD=Hossein*(!^
-    network_mode: host
+#    network_mode: host
 
 
 volumes:

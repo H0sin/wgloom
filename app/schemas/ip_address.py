@@ -12,4 +12,7 @@ class InterfaceIps(BaseModel):
     ip_addresses: List[IPWithAssign]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class IpAddress(BaseModel):
+    ip : str

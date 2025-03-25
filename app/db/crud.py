@@ -1,3 +1,5 @@
+import secrets
+import uuid
 from typing import Optional, List, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.db.models import Interface, IpAddress, Peer
 from app.schemas.interface import InterfaceCreate, InterfaceStatus
 from app.schemas.ip_address import InterfaceIps, IPWithAssign
-from app.schemas.peer import PeerCreate
+from app.schemas.peer import PeerCreate, PeerResponse
 from app.schemas.user import UserStatus
 from app.utils.iprange_utility import IpRangeUtility
 from app.utils.key_pair import KeyPair, generate_keys
@@ -102,61 +104,130 @@ async def get_interface_ips(db: AsyncSession, name: str) -> Optional[InterfaceIp
     )
 
 
-async def add_peer(db: AsyncSession, peer: PeerCreate, interface: Interface):
-    if len(peer.allowedIPs) == 0:
-        result = await db.scalars(
-            select(IpAddress).where(IpAddress.peer_id == None)
+async def get_peer_by_private_key(db: AsyncSession, private_key: str) -> Peer:
+    query = select(Peer).filter(Peer.private_key == private_key)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
+
+
+async def get_peer_by_token(db: AsyncSession, token: str) -> Peer:
+    query = (
+        select(Peer)
+        .options(
+            selectinload(Peer.interface),
+            selectinload(Peer.ip_addresses)
         )
-        ip_record = result.first()
-        if ip_record:
-            print("Found IP address with no peer:", ip_record.ip)
-        else:
-            raise ValueError("Not found IP address empty")
-    else:
-        # If allowedIPs is not empty, ensure none of these IPs belong to another peer
-        ips = peer.allowedIPs  # list of IP strings
-        # Find all IpAddress rows that match any of the IPs in the list
-        # and already have a peer assigned (peer_id != None).
-        result = await db.scalars(
-            select(IpAddress).where(
-                IpAddress.ip.in_(ips),
-                IpAddress.peer_id != None
-            )
-        )
-
-        used_ips = result.all()
-
-        if used_ips:
-            # Means at least one IP in the list is used by another peer
-            raise ValueError("One or more IP addresses are already assigned to another peer.")
-        else:
-            print("All IP addresses in allowedIPs are free to use.")
-
-        # Generate keys if needed
-    if not peer.private_key or not peer.public_key:
-        keys = generate_keys()
-        peer.private_key = keys.private_key
-        peer.public_key = keys.public_key
-
-    new_peer = Peer(
-        name=peer.name,
-        public_key=peer.public_key,
-        private_key=peer.private_key,
-        pre_shared_key=peer.pre_shared_key,
-        addresses=peer.allowedIPs,  # Storing as an ARRAY(String) if desired
-        dns=peer.dns,
-        mut=peer.mut,
-        persistent_keep_alive=peer.persistent_keep_alive,
-        note=peer.note,
-        interface_id=interface.id,  # or interface_id=peer.interface_id
-        status=peer.status  # Or any other logic for status
+        .filter(Peer.token == token)
     )
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-    db.add(new_peer)
-    await db.commit()
-    await db.refresh(interface)
+async def add_peer(db: AsyncSession, peer: PeerCreate, interface: Interface) -> Sequence[Peer] | None:
+    if peer.bulk:
+        peers: list[Peer | None] = []
 
-    success = await create_peer(new_peer, interface)
-    print("CreatePeer result:", success)
+        while 0 < peer.count:
+            result = await db.scalars(
+                select(IpAddress).where(IpAddress.peer_id == None)
+            )
 
-    print("ip address is not empty")
+            ip_record = result.first()
+
+            keys = generate_keys()
+            peer.private_key = keys.private_key
+            peer.public_key = keys.public_key
+
+            new_peer = Peer(
+                name=str(uuid.uuid4()),
+                public_key=keys.public_key,
+                private_key=keys.private_key,
+                pre_shared_key=keys.pre_shared_key,
+                interface_id=interface.id,
+                on_hold_expire_duration=peer.on_hold_expire_duration,
+                status=peer.status,
+                dns=peer.dns,
+                mtu=peer.mtu,
+                token=secrets.token_hex(16),
+                end_point_allowed_ips=peer.end_point_allowed_ips
+            )
+
+            db.add(new_peer)
+            await db.commit()
+            await db.refresh(new_peer)
+
+            ip_record.peer_id = new_peer.id
+
+            await db.commit()
+            await create_peer(new_peer, [ip_record.ip], interface)
+
+            peers.append(new_peer)
+            peer.count = peer.count - 1
+
+        peer_ids = [p.id for p in peers]
+        result = await db.scalars(
+            select(Peer)
+            .options(selectinload(Peer.ip_addresses))
+            .where(Peer.id.in_(peer_ids))
+        )
+        peers_loaded = result.all()
+        return peers_loaded
+
+    # else:
+    #     pass
+    #
+    # if len(peer.allowedIPs) == 0:
+    #     result = await db.scalars(
+    #         select(IpAddress).where(IpAddress.peer_id == None)
+    #     )
+    #     ip_record = result.first()
+    #     if ip_record:
+    #         print("Found IP address with no peer:", ip_record.ip)
+    #     else:
+    #         raise ValueError("Not found IP address empty")
+    # else:
+    #     # If allowedIPs is not empty, ensure none of these IPs belong to another peer
+    #     ips = peer.allowedIPs  # list of IP strings
+    #     # Find all IpAddress rows that match any of the IPs in the list
+    #     # and already have a peer assigned (peer_id != None).
+    #     result = await db.scalars(
+    #         select(IpAddress).where(
+    #             IpAddress.ip.in_(ips),
+    #             IpAddress.peer_id != None
+    #         )
+    #     )
+    #
+    #     used_ips = result.all()
+    #
+    #     if used_ips:
+    #         # Means at least one IP in the list is used by another peer
+    #         raise ValueError("One or more IP addresses are already assigned to another peer.")
+    #     else:
+    #         print("All IP addresses in allowedIPs are free to use.")
+    #
+    #     # Generate keys if needed
+    # if not peer.private_key or not peer.public_key:
+    #     keys = generate_keys()
+    #     peer.private_key = keys.private_key
+    #     peer.public_key = keys.public_key
+    #
+    # new_peer = Peer(
+    #     name=peer.name,
+    #     public_key=peer.public_key,
+    #     private_key=peer.private_key,
+    #     pre_shared_key=peer.pre_shared_key,
+    #     dns=peer.dns,
+    #     mut=peer.mut,
+    #     persistent_keep_alive=peer.persistent_keep_alive,
+    #     note=peer.note,
+    #     interface_id=interface.id,
+    #     status=peer.status
+    # )
+    #
+    # db.add(new_peer)
+    # await db.commit()
+    # await db.refresh(interface)
+    #
+    # success = await create_peer(new_peer, interface)
+    # print("CreatePeer result:", success)
+    #
+    # print("ip address is not empty")

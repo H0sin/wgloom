@@ -24,8 +24,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', default=30, 
 # dashboard path
 DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
 
-# unicorn port
+
+# unicorn config
+UVICORN_HOST = config("UVICORN_HOST", default="0.0.0.0")
 UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
+UVICORN_SSL_CERTFILE = config("UVICORN_SSL_CERTFILE", default=None)
+UVICORN_SSL_KEYFILE = config("UVICORN_SSL_KEYFILE", default=None)
+UVICORN_SSL_CA_TYPE = config("UVICORN_SSL_CA_TYPE", default="public").lower()
+
 
 # interface
 INTERFACE_DIRECTORY = config('INTERFACE_DIRECTORY',default='/etc/wireguard')
@@ -35,3 +41,8 @@ INTERFACE_DIRECTORY = config('INTERFACE_DIRECTORY',default='/etc/wireguard')
 VITE_BASE_API = f"http://127.0.0.1:{UVICORN_PORT}/api/" \
     if DEBUG and config("VITE_BASE_API", default="/api/") == "/api/" \
     else config("VITE_BASE_API", default="/api/")
+
+# config path
+CUSTOM_TEMPLATES_DIRECTORY = config("CUSTOM_TEMPLATES_DIRECTORY", default=None)
+SUBSCRIPTION_PAGE_TEMPLATE = config("SUBSCRIPTION_PAGE_TEMPLATE", default="config/index.html")
+WG_SUBSCRIPTION_PATH = config("WG_SUBSCRIPTION_PATH", default="config").strip("/")

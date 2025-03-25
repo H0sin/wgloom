@@ -1,11 +1,12 @@
 from fastapi import APIRouter
-from . import interface, peer
+from . import interface, peer, config
 
 api_router = APIRouter()
 
 routers = [
     interface.router,
-    peer.router
+    peer.router,
+    config.router
 ]
 
 for router in routers:

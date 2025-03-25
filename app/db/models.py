@@ -1,6 +1,7 @@
+import secrets
 from email.policy import default
 
-from sqlalchemy import Column, Integer, String, Boolean, Text, Float, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Text, Float, Enum, ForeignKey, BIGINT, text
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from sqlalchemy.orm import relationship
 
@@ -41,17 +42,27 @@ class Interface(Base):
 
 class Peer(Base):
     __tablename__ = 'peers'
-    name = Column(String(34), unique=True, index=True)
-    public_key = Column(String(512),unique=True)
-    private_key = Column(String(512),unique=True)
-    pre_shared_key = Column(String(512),unique=True)
+    name = Column(String(512), unique=True, index=True)
+    public_key = Column(String(512), unique=True)
+    private_key = Column(String(512), unique=True)
+    pre_shared_key = Column(String(512), unique=True)
     # allowedIPs = Column(INET)
-    addresses = Column(ARRAY(String))
+    # addresses = Column(ARRAY(String))
     dns = Column(String(50))
-    mut = Column(Integer)
+    mtu = Column(Integer)
     persistent_keep_alive = Column(Integer)
     status = Column(Enum(UserStatus), nullable=False, default=UserStatus.active)
     note = Column(Text)
+    total_volume = Column(BIGINT)
+    expire_time = Column(BIGINT)
+    upload_volume = Column(BIGINT(), default=0)
+    # start_time = Column(BIGINT)
+    last_total_received_volume = Column(BIGINT(), default=0)
+    last_download_volume = Column(BIGINT(), default=0)
+    last_upload_volume = Column(BIGINT(), default=0)
+    on_hold_expire_duration = Column(BIGINT())
+    token = Column(String(64), unique=True)
+    end_point_allowed_ips = (Column(ARRAY(String), default="[0.0.0.0]"))
 
     interface_id = Column(Integer, ForeignKey('interfaces.id'))
     interface = relationship("Interface", back_populates="peers")

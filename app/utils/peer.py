@@ -42,7 +42,7 @@ async def save(interface_name: str) -> bool:
         print("An error occurred in save():", e)
         return False
 
-async def create_peer(peer: Peer, interface: Interface) -> bool:
+async def create_peer(peer: Peer,ips:list[str], interface: Interface) -> bool:
     """
     Equivalent to the C# CreatePeer method:
     Calls 'wg set <interface.Name> peer <peer.PublicKey> allowed-ips <peer.AllowedIPs>',
@@ -50,7 +50,7 @@ async def create_peer(peer: Peer, interface: Interface) -> bool:
     Returns True if successful, False otherwise.
     """
     # Print the command for debugging
-    print(f"set {interface.name} peer {peer.public_key} allowed-ips {','.join(peer.ip_addresses)}")
+    print(f"set {interface.name} peer {peer.public_key} allowed-ips {','.join(ips)}")
 
     cmd = [
         "wg",
@@ -59,8 +59,9 @@ async def create_peer(peer: Peer, interface: Interface) -> bool:
         "peer",
         peer.public_key,
         "allowed-ips",
-        ",".join(peer.ip_addresses)
+        ",".join(ips)
     ]
+
     try:
         process = await asyncio.create_subprocess_exec(
             *cmd,
@@ -139,3 +140,6 @@ async def remove_peer(interface_name: str, public_key: str) -> None:
 #         await remove_peer(interface_obj.Name, peer_dto.PublicKey)
 #
 #     asyncio.run(main())
+
+d = ['1,2,3,4']
+print(','.join(d))

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>{{ peer.name }}</h1>
+<h2 style="visibility: hidden" id="content-text">{{qr_content}}</h2>
+
+<div id="qrcode"></div>
+<script src="./qrcode.min.js"></script>
+<script>
+
+    const configText = document.getElementById("content-text").innerText;
+
+    new QRCode(document.getElementById("qrcode"), {
+        text: configText,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+</script>
+</body>
+</html>
