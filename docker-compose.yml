@@ -10,6 +10,7 @@ services:
     network_mode: host
     volumes:
       - /root/backup/wireguard/interfaces:/etc/wireguard/
+      - /root/wgloom:/wgloom/
     privileged: true
     cap_add:
       - NET_ADMIN
